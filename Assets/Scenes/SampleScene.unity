@@ -369,8 +369,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7355a251107405e49952f29fc3cdd43d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardManager
+  sleepSeconds: 0.5
   oPiecePrefab: {fileID: 1443830551360738517, guid: 68499b37ac8e0b44c818bd61657befd8, type: 3}
-  initialVector3: {x: 0, y: 20, z: 0}
 --- !u!4 &1892385310
 Transform:
   m_ObjectHideFlags: 0

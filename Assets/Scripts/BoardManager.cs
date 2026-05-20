@@ -10,7 +10,7 @@ using Debug = UnityEngine.Debug;
 
 public class BoardManager : MonoBehaviour
 {
-
+    public float sleepSeconds;
     public  int[,] grid = new int[Constant.boardx, Constant.boardy];
     private  List<(int x, int y)> oPieceInitPositionList = new List<(int x, int y)>{
     (4, 0),
@@ -70,7 +70,7 @@ public class BoardManager : MonoBehaviour
                     activePiecePositionList.Clear();
                     InitActivePiecePositions();
                     activeObject = Instantiate(oPiecePrefab, initialVector3, Quaternion.identity);
-                    yield return new WaitForSeconds(1f);
+                    yield return new WaitForSeconds(sleepSeconds);
                 }
 
             }
@@ -80,7 +80,7 @@ public class BoardManager : MonoBehaviour
 
                 if (moveLeftPressed && CanPieceMoveLeft())
                 {
-                    //Debug.Log("sol ok basti");
+                    
                     UpdateActivePiecePositionsForLeft();
                     activeObject.transform.position += Vector3.left;
                     moveLeftPressed = false;
@@ -88,7 +88,7 @@ public class BoardManager : MonoBehaviour
 
                 if (moveRightPressed && CanPieceMoveRight())
                 {
-                    //Debug.Log("sol ok basti");
+                   
                     UpdateActivePiecePositionsForRight();
                     activeObject.transform.position += Vector3.right;
                     moveRightPressed = false;
@@ -113,7 +113,7 @@ public class BoardManager : MonoBehaviour
             }              
 
             //printGrid();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(sleepSeconds);
         }
     }
 
