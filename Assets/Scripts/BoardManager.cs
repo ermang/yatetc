@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
@@ -21,6 +22,9 @@ public class BoardManager : MonoBehaviour
     private Vector3 initialVector3 = new Vector3(0, Constant.boardy-2, 0);
     private GameObject activeObject;
     private List<(int x, int y)> activePiecePositionList = new List<(int x, int y)>();
+    private bool moveLeftPressed = false;
+    private bool moveRightPressed = false;
+    List<GameObject> frozenBlocks = new List<GameObject>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -42,16 +46,11 @@ public class BoardManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //Debug.Log("update triggered");
-    }
+        if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+            moveLeftPressed = true;
 
-
-    private void InitOPieceOnGrid()
-    {
-        grid[4, 0] = 1;
-        grid[4, 1] = 1;
-        grid[5, 0] = 1;
-        grid[5, 1] = 1;
+        if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+            moveRightPressed = true;
     }
 
     IEnumerator GameLoop()
@@ -59,7 +58,7 @@ public class BoardManager : MonoBehaviour
         while (true)
         { 
 
-            printGrid();
+            //printGrid();
             if (activeObject == null)
             {
                 //pick object to create
@@ -68,7 +67,6 @@ public class BoardManager : MonoBehaviour
 
                 if (objectFits)
                 {
-                    InitOPieceOnGrid();
                     activePiecePositionList.Clear();
                     InitActivePiecePositions();
                     activeObject = Instantiate(oPiecePrefab, initialVector3, Quaternion.identity);
@@ -79,18 +77,104 @@ public class BoardManager : MonoBehaviour
 
             if (canPieceMoveDown())
             {
-                ClearFromGridCurrentPositions();
-                UpdateActivePiecePositions();
-                OccupyNewPositionsOnGrid();
+
+                if (moveLeftPressed && CanPieceMoveLeft())
+                {
+                    //Debug.Log("sol ok basti");
+                    UpdateActivePiecePositionsForLeft();
+                    activeObject.transform.position += Vector3.left;
+                    moveLeftPressed = false;
+                }
+
+                if (moveRightPressed && CanPieceMoveRight())
+                {
+                    //Debug.Log("sol ok basti");
+                    UpdateActivePiecePositionsForRight();
+                    activeObject.transform.position += Vector3.right;
+                    moveRightPressed = false;
+                }
+
+                UpdateActivePiecePositions();                
                 activeObject.transform.position += Vector3.down;
             }
             else
+            { 
+                OccupyNewPositionsOnGrid();
+
+                for (int i = activeObject.transform.childCount - 1; i >= 0; i--)
+                {
+                    Transform child = activeObject.transform.GetChild(i);
+                    child.parent = null;
+                    frozenBlocks.Add(child.gameObject);
+                }
+
+                Destroy(activeObject);
                 activeObject = null;
+            }              
 
-            printGrid();
-
+            //printGrid();
             yield return new WaitForSeconds(1f);
         }
+    }
+
+    private void UpdateActivePiecePositionsForRight()
+    {
+        List<(int x, int y)> newPositions = new List<(int x, int y)>();
+
+        foreach (var positionItem in activePiecePositionList)
+            newPositions.Add((positionItem.x + 1, positionItem.y));
+
+        activePiecePositionList = newPositions;
+    }
+
+    private bool CanPieceMoveRight()
+    {
+        bool canMoveLeft = true;
+
+        foreach (var positionItem in activePiecePositionList)
+        {
+            (int x, int y) newPosition = (positionItem.x + 1, positionItem.y);
+            //Debug.Log("lolo" + newPosition);
+
+            if (newPosition.x > 9 || newPosition.x < 0 || newPosition.y > 19 || newPosition.y < 0) //can not move condition
+            {
+                canMoveLeft = false;
+                break;
+            }
+        }
+
+
+        return canMoveLeft;
+    }
+
+    private void UpdateActivePiecePositionsForLeft()
+    {
+        List<(int x, int y)> newPositions = new List<(int x, int y)>();
+
+        foreach (var positionItem in activePiecePositionList)
+            newPositions.Add((positionItem.x -1, positionItem.y));
+
+        activePiecePositionList = newPositions;
+    }
+
+    private bool CanPieceMoveLeft()
+    {
+        bool canMoveLeft = true;
+
+        foreach (var positionItem in activePiecePositionList)
+        {
+            (int x, int y) newPosition = (positionItem.x -1, positionItem.y);
+            //Debug.Log("lolo" + newPosition);
+
+            if (newPosition.x > 9 || newPosition.x < 0 || newPosition.y > 19 || newPosition.y < 0) //can not move condition
+            {
+                canMoveLeft = false;
+                break;
+            }
+        }
+
+
+        return canMoveLeft;
     }
 
     private void InitActivePiecePositions()
@@ -115,12 +199,6 @@ public class BoardManager : MonoBehaviour
            grid[positionItem.x, positionItem.y] = 1;
     }
 
-    private void ClearFromGridCurrentPositions()
-    {
-        foreach (var positionItem in activePiecePositionList)
-            grid[positionItem.x, positionItem.y] = 0;
-    }
-
     private bool canPieceMoveDown()
     {
         bool canMoveDown = true;
@@ -128,9 +206,9 @@ public class BoardManager : MonoBehaviour
         foreach (var positionItem in activePiecePositionList)
         {
             (int x, int y) newPosition = (positionItem.x, positionItem.y+1);
-            Debug.Log("lolo" + newPosition);
+            //Debug.Log("lolo" + newPosition);
 
-            if (newPosition.x >9 || newPosition.x < 0 || newPosition.y > 19 || newPosition.y < 0 || (grid[newPosition.x, newPosition.y] == 1 && !activePiecePositionList.Contains(newPosition)) ) //can not move condition
+            if (newPosition.x >9 || newPosition.x < 0 || newPosition.y > 19 || newPosition.y < 0 || grid[newPosition.x, newPosition.y] == 1) //can not move condition
             {
                 canMoveDown = false;
                 break;
@@ -143,7 +221,6 @@ public class BoardManager : MonoBehaviour
 
     private void printGrid()
     {
-
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < Constant.boardx; i++)

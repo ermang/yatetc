@@ -14,14 +14,14 @@ public class OPieceController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
-            transform.position += Vector3.left;
+        //if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+        //    transform.position += Vector3.left;
 
-        if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
-            transform.position += Vector3.right;
+        //if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+        //    transform.position += Vector3.right;
 
-        if (Keyboard.current.downArrowKey.wasPressedThisFrame)
-            transform.position += Vector3.down;
+        //if (Keyboard.current.downArrowKey.wasPressedThisFrame)
+        //    transform.position += Vector3.down;
     }
 
 }
